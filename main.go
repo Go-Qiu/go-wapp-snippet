@@ -30,7 +30,8 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 		// set the response code (i.e. 405) in the header
 		w.WriteHeader(405)
-		w.Write([]byte("Method Not Allowed"))
+		// w.Write([]byte("Method Not Allowed"))
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
