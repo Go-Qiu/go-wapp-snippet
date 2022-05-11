@@ -1,25 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
 
-	if r.RequestURI == "/" {
-		// incoming request uri matches the pattern.
-		w.Write([]byte("Hello from Snippetbox"))
-	} else {
-		// incoming request uri does not match the pattern.
-		// request arrives here because of the catch all pattern behaviour.
-
-		msg := fmt.Sprintln("<h1>BAD REQUEST</h1>")
-		msg += fmt.Sprintf("<h3>Cannot find URI, '%s'</h3>", r.RequestURI)
-		fmt.Fprintln(w, msg)
+	if r.RequestURI != "/" {
+		// exception handling.  return 404 when request uri does not match
+		// any of the fixed path patterns.
+		http.NotFound(w, r)
+		return
 	}
-
+	// incoming request uri matches the pattern.
+	w.Write([]byte("Hello from Snippetbox"))
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
