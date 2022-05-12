@@ -12,7 +12,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	if r.RequestURI != "/" {
 		// exception handling.  return 404 when request uri does not match
-		// any of the fixed path patterns.
+		// any of the fixed path patterns.  recommended approach for security sack.
 		http.NotFound(w, r)
 		return
 	}
