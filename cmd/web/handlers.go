@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,8 +16,25 @@ func home(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	// incoming request uri matches the pattern.
-	w.Write([]byte("Hello from Snippetbox"))
+
+	files := []string{
+		"./ui/html/base.tmpl.html",
+		"./ui/html/partials/nav.tmpl.html",
+		"./ui/html/pages/home.tmpl.html",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
+	err = ts.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
@@ -51,25 +69,5 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte("<h1>Create a new snippet ...</h1>"))
-
-}
-
-func main() {
-
-	// it is recommended not to use the default server mux in http package in production.
-	// recommended to make a declaration and use for instantiating a http server.
-	mux := http.NewServeMux()
-
-	// fixed path patterns
-	mux.HandleFunc("/snippet/view", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
-
-	// subtree path pattern.
-	// this pattern is a catch all, when incoming request uri does not
-	// match any of the above fixed path patterns.
-	mux.HandleFunc("/", home)
-
-	log.Println("Http Server started and listening on http://localhost:4000 ...")
-	log.Fatal(http.ListenAndServe(":4000", mux))
 
 }
