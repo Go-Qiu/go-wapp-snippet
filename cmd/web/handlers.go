@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -13,7 +12,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if r.RequestURI != "/" {
 		// exception handling.  return 404 when request uri does not match
 		// any of the fixed path patterns.  recommended approach for security sack.
-		http.NotFound(w, r)
+		// http.NotFound(w, r)
+		app.notFound(w)
 		return
 	}
 
@@ -25,15 +25,17 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		app.errorLog.Println(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		// app.errorLog.Println(err.Error())
+		// http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		app.serverError(w, err)
 		return
 	}
 
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		// log.Println(err.Error())
+		// http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		app.serverError(w, err)
 		return
 	}
 
@@ -46,7 +48,8 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 
 	// 404 handling
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		// http.NotFound(w, r)
+		app.notFound(w)
 		return
 	}
 
@@ -59,14 +62,15 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 	// 'POST' request check.
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		// indicate in the response header that the allow method is 'POST'
-		w.Header().Set("Allow", "POST")
+		w.Header().Set("Allow", http.MethodPost)
 
 		// set the response code (i.e. 405) in the header
 		w.WriteHeader(405)
 		// w.Write([]byte("Method Not Allowed"))
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		// http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 
