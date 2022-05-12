@@ -13,6 +13,7 @@ type config struct {
 }
 
 func main() {
+
 	// define a new command-line flag, 'addr', default value of ":4000".
 	// this is added to allow the server to be started on a specific network address and port
 	// at the command-line (e.g. go run . -addr="192.168.1.3:8081")
@@ -31,7 +32,6 @@ func main() {
 	// it is recommended not to use the default server mux in http package in production.
 	// recommended to make a declaration and use for instantiating a http server.
 	mux := http.NewServeMux()
-
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
@@ -46,7 +46,15 @@ func main() {
 	// leave this out, to get '404', if there is no need for "/" handling, for security sack.
 	mux.HandleFunc("/", home)
 
+	// instantiate a custom http server.  do this to allow custom error logging to be used.
+	srv := &http.Server{
+		Addr:     cfg.addr,
+		ErrorLog: errorLog,
+		Handler:  mux,
+	}
+
 	infoLog.Printf("Http Server started and listening on http://%s ...", cfg.addr)
-	errorLog.Fatal(http.ListenAndServe(cfg.addr, mux))
+	// errorLog.Fatal(http.ListenAndServe(cfg.addr, mux))
+	errorLog.Fatal(srv.ListenAndServe())
 
 }
